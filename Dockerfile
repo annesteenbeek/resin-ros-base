@@ -21,21 +21,36 @@ RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 \
 
 # apt gets
 RUN apt-get update -qq && apt-get install --no-install-recommends -yqq \
-    ros-kinetic-ros-base \
+    python-dev \
+    python-pip \
+    python-rosdep \
     python-rosinstall \
     python-rosinstall-generator \
     python-wstool \
     python-catkin-tools \
-    build-essential 
+    python-rospkg 
 #     rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /usr/src/catkin_ws/src 
+RUN mkdir -p /usr/src/catkin_ws/src ${ROS_INSTALL_DIR}
 
 WORKDIR /usr/src/catkin_ws
 
 RUN rosdep init \
     && rosdep update \
-    && catkin init 
+    && rosinstall_generator ${ROS_CONFIG} \
+        --rosdistro ${ROS_DISTRO} --deps --tar > .rosinstall \
+    && wstool init src .rosinstall \
+    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y \
+        --skip-keys python-rosdep \
+        --skip-keys python-rospkg \
+        --skip-keys python-catkin-pkg \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && catkin init \
+    && catkin config --install --install-space "${ROS_INSTALL_DIR}" \
+        --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    && catkin build --no-status --no-summary --no-notify \
+    && catkin clean -y --logs --build --devel 
    
 WORKDIR /usr
 
