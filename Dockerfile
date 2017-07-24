@@ -58,13 +58,13 @@ RUN rosdep init \
 # Setup modules
 RUN git clone -b ${ROS_DISTRO}-devel https://github.com/ros/ros_tutorials.git \
     src/ros_tutorials
-RUN catkin build rocpp_tutorials
+RUN catkin build roscpp_tutorials
 
 # Finish setup
 COPY ./entrypoint.sh /usr/
 
 ENTRYPOINT ["bash", "/usr/entrypoint.sh"]
 
-CMD ["roslaunch", "rocpp_tutorials", "talker_listener.launch"]
+CMD ["roslaunch", "roscpp_tutorials", "talker_listener.launch"]
 
 # TODO user namespace
