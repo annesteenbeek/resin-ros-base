@@ -1,0 +1,18 @@
+# this template allows for creation of multiple versions of the dockerfile
+# Versions: resin, local
+# Shared variables
+@ros_distro="kinetic"
+@ros_config="ros_base"
+
+#%%ros_base.resin.component%%
+%%ros_base.local.component%%
+
+%%setup_module.compoenent%%
+
+WORKDIR /usr
+
+COPY ./entrypoint.sh .
+
+ENTRYPOINT ["bash", "entrypoint.sh"]
+
+CMD ["bash"]
