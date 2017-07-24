@@ -11,7 +11,8 @@ ENV INITSYSTEM="on" \
 ENV ROS_DISTRO="kinetic" \
     ROS_CONFIG="ros_base" 
 
-ENV ROS_INSTALL_DIR="/opt/ros/${ROS_DISTRO}"
+ENV ROS_INSTALL_DIR="/opt/ros/${ROS_DISTRO}" \
+    CATKIN_DIR="/usr/src/catkin_ws"
 
 # add sources
 RUN echo "deb http://packages.ros.org/ros/ubuntu jessie main" > \
@@ -28,12 +29,14 @@ RUN apt-get update -qq && apt-get install --no-install-recommends -yqq \
     python-rosinstall-generator \
     python-wstool \
     python-catkin-tools \
-    python-rospkg 
+    python-rospkg \
+    build-essential \
+    git-core
 #     rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /usr/src/catkin_ws/src ${ROS_INSTALL_DIR}
+RUN mkdir -p ${CATKIN_DIR}/src ${ROS_INSTALL_DIR}
 
-WORKDIR /usr/src/catkin_ws
+WORKDIR "${CATKIN_DIR}"
 
 RUN rosdep init \
     && rosdep update \
@@ -52,12 +55,16 @@ RUN rosdep init \
     && catkin build --no-status --no-summary --no-notify \
     && catkin clean -y --logs --build --devel 
    
-WORKDIR /usr
+# Setup modules
+RUN git clone -b ${ROS_DISTRO}-devel https://github.com/ros/ros_tutorials.git \
+    src/ros_tutorials
+RUN catkin build rocpp_tutorials
 
-COPY ./entrypoint.sh .
+# Finish setup
+COPY ./entrypoint.sh /usr/
 
-ENTRYPOINT ["bash", "entrypoint.sh"]
+ENTRYPOINT ["bash", "/usr/entrypoint.sh"]
 
-CMD ["bash"]
+CMD ["roslaunch", "rocpp_tutorials", "talker_listener.launch"]
 
 # TODO user namespace

@@ -5,7 +5,7 @@ set -e # exit if returns nonzero
 source "${ROS_INSTALL_DIR}/setup.bash"
 
 # setup ROS networking
-export ROS_HOSTNAME="LOCALHOST"
+export ROS_HOSTNAME="localhost"
 export ROS_MASTER_URI="http://localhost:11311"
 
 exec "$@"
