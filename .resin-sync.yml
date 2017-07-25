@@ -1,0 +1,7 @@
+before: ''
+local_resinos: {}
+uuid: 6156f1cdacf4a5bfa2fa972a93d4ab39
+destination: /usr/src/
+ignore:
+  - .git
+  - node_modules/
