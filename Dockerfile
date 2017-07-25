@@ -53,7 +53,8 @@ RUN rosdep init \
     && catkin config --install --install-space "${ROS_INSTALL_DIR}" \
         --cmake-args -DCMAKE_BUILD_TYPE=Release \
     && catkin build --no-status --no-summary --no-notify \
-    && catkin clean -y --logs --build --devel 
+    && catkin clean -y --logs --build --devel \
+    && rm -rf src/*
    
 # Setup modules
 RUN git clone -b ${ROS_DISTRO}-devel https://github.com/ros/ros_tutorials.git \
