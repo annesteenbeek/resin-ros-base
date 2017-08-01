@@ -57,6 +57,7 @@ RUN rosdep init \
     && rm -rf src/*
    
 # Setup modules
+RUN catkin config --no-install --no-cmake-args
 RUN git clone -b ${ROS_DISTRO}-devel https://github.com/ros/ros_tutorials.git \
     src/ros_tutorials
 RUN catkin build roscpp_tutorials
