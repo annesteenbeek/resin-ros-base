@@ -3,7 +3,7 @@ set -e # exit if returns nonzero
 
 # setup ROS env
 source "${ROS_INSTALL_DIR}/setup.bash"
-source "${CATKIN_DIR}/dev/setup.bash"
+source "${CATKIN_DIR}/devel/setup.bash"
 
 # setup ROS networking
 export ROS_HOSTNAME="localhost"
