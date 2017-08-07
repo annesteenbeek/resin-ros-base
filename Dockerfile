@@ -1,5 +1,4 @@
 FROM resin/raspberrypi3-buildpack-deps:jessie
-# FROM debian:jessie
 
 ENV INITSYSTEM="on" \
     TERM="xterm" \
@@ -34,38 +33,25 @@ RUN apt-get update -qq && apt-get install --no-install-recommends -yqq \
     git-core
 #     rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p ${CATKIN_DIR}/src ${ROS_INSTALL_DIR}
-
+RUN mkdir -p ${CATKIN_DIR}/src
 WORKDIR "${CATKIN_DIR}"
 
-RUN rosdep init \
-    && rosdep update \
-    && rosinstall_generator ${ROS_CONFIG} \
-        --rosdistro ${ROS_DISTRO} --deps --tar > .rosinstall \
-    && wstool init src .rosinstall \
-    && rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y \
-        --skip-keys python-rosdep \
-        --skip-keys python-rospkg \
-        --skip-keys python-catkin-pkg \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && catkin init \
-    && catkin config --install --install-space "${ROS_INSTALL_DIR}" \
-        --cmake-args -DCMAKE_BUILD_TYPE=Release \
-    && catkin build --no-status --no-summary --no-notify \
-    && catkin clean -y --logs --build --devel \
-    && rm -rf src/*
-   
 # Setup modules
-RUN git clone -b ${ROS_DISTRO}-devel https://github.com/ros/ros_tutorials.git \
-    src/ros_tutorials
-RUN catkin build roscpp_tutorials
-
+RUN /bin/bash -c "source /opt/ros/kinetic/setup.bash \
+    && catkin init \
+    && wstool init src \
+    && rosinstall_generator --rosdistro kinetic mavlink | tee /tmp/mavros.rosinstall \
+    && rosinstall_generator --upstream mavros | tee -a /tmp/mavros.rosinstall \
+    && wstool merge -t src /tmp/mavros.rosinstall \
+    && wstool update -t src -j4 \
+    && rosdep install --from-paths src --ignore-src -y \
+    && catkin build"
+    
 # Finish setup
-COPY ./entrypoint.sh /usr/
+COPY ./entrypoint.sh  /usr/
 
 ENTRYPOINT ["bash", "/usr/entrypoint.sh"]
 
-CMD ["roslaunch", "roscpp_tutorials", "talker_listener.launch"]
+CMD ["roslaunch", "mavros", "apm.launch"]
 
 # TODO user namespace
